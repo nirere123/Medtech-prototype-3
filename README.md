@@ -1,6 +1,15 @@
-# MedTech Training & Certificate System — Prototype (Full Version)
+# MedTech Training & Certificate System — Prototype
 
 A web-based training and certification platform that helps healthcare workers in Rwanda and Africa learn to correctly operate medical diagnostic equipment (ultrasound, X-ray, laboratory analyzers), complete quizzes, and earn certificates.
+
+## Project links
+
+| | |
+|---|---|
+| **Live demo (public URL)** | https://nirere123.github.io/Medtech-prototype-3/ |
+| **Demo video** | *Add your video link here once recorded* |
+| **GitHub repository** | https://github.com/nirere123/Medtech-prototype-3 |
+| **SRS document** | https://docs.google.com/document/d/10QpUreONt_dSWneBOd2tJgxTh8hb7i73IXRW5mTrNu0/edit?usp=sharing |
 
 This is the **sophisticated / detailed prototype**: a full multi-page site (separate pages for the dashboard, course catalog, course detail, quiz, and certificates) with a designed sidebar app shell, progress tracking, and an admin course-management screen. It's still just HTML, CSS, and JavaScript — no build step, no backend, no npm install. `localStorage` acts as the database.
 
@@ -37,7 +46,7 @@ Keep every file in this same folder when you download, copy, or push it — the 
 
 ## How to run it in VS Code (Live Server)
 
-1. Put all 11 files above into **one folder**.
+1. Put all the files above (plus this README) into **one folder**.
 2. Open that folder in VS Code: `File → Open Folder…`
 3. Install the **Live Server** extension (by Ritwick Dey) if you don't have it.
 4. Right-click `index.html` → **Open with Live Server**.
@@ -57,7 +66,23 @@ Just double-click `index.html` — the whole site works by opening files directl
 6. Passing automatically issues a certificate — view it under **My certificates**, and click **Download certificate** to save it as a PNG image.
 7. Log in as an **Administrator** account to see **Manage courses** in the sidebar. From there you can add a new course, edit an existing one (title, category, description, modules, quiz questions), and — when you have a real training video — paste its link into the **Video link** field. Leave it blank and learners will just see the "video coming soon" placeholder.
 
+## Deployment (already done for this project)
 
+This project is deployed via **GitHub Pages** at https://nirere123.github.io/Medtech-prototype-3/ — no `127.0.0.1` / `localhost` link is used anywhere, since that only works on a single computer while Live Server is running and would not be accessible to a grader.
+
+If you ever need to redeploy (e.g. after pushing new changes), here's how GitHub Pages was set up:
+
+1. Repository → **Settings → Pages**
+2. **Source**: `Deploy from a branch` → **Branch**: `main` → folder `/ (root)` → **Save**
+3. Wait 1–2 minutes, then refresh the Pages settings screen for the live URL
+4. Every time you push new commits to `main`, GitHub Pages automatically redeploys the update within a minute or two — no extra steps needed
+
+## Before you submit — quick checklist
+
+- [x] GitHub repo is public — confirmed at https://github.com/nirere123/Medtech-prototype-3
+- [x] The GitHub Pages URL loads and works — confirmed at https://nirere123.github.io/Medtech-prototype-3/
+- [ ] Add your demo video link to the table above once it's recorded and uploaded
+- [ ] Your Google Doc (named `personNames_Summative_MMDDYYYY`) has the video link, GitHub link, and SRS link, and sharing is set so anyone with the link can view it
 
 ## Notes on this prototype
 
