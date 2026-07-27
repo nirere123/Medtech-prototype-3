@@ -57,15 +57,7 @@ Just double-click `index.html` — the whole site works by opening files directl
 6. Passing automatically issues a certificate — view it under **My certificates**, and click **Download certificate** to save it as a PNG image.
 7. Log in as an **Administrator** account to see **Manage courses** in the sidebar. From there you can add a new course, edit an existing one (title, category, description, modules, quiz questions), and — when you have a real training video — paste its link into the **Video link** field. Leave it blank and learners will just see the "video coming soon" placeholder.
 
-## Deploying it publicly (for your assignment submission)
 
-Since this is a static site, host it for free with **GitHub Pages**:
-
-1. Push all files to a public GitHub repository (keep them flat, same as above).
-2. In the repo, go to **Settings → Pages**.
-3. Under "Build and deployment," set **Source** to `Deploy from a branch`, branch `main`, folder `/ (root)`.
-4. Save. GitHub publishes the site at `https://<your-username>.github.io/<repo-name>/`.
-5. Use that URL as your public product link.
 
 ## Notes on this prototype
 
