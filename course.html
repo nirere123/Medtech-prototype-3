@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = renderShell('courses');
+  if (user) {
+    const main = document.getElementById('mainContent');
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get('id');
+    const course = Store.getCourse(courseId);
+
+    if (!course) {
+      main.innerHTML = `<div class="empty-state card"><p>Course not found.</p><a href="courses.html" class="btn btn-ghost" style="margin-top:10px;">Back to courses</a></div>`;
+    } else {
+      let enrollment = Store.getEnrollment(user.id, course.id);
+
+      function renderPage() {
+        const pct = enrollment ? Store.courseProgressPercent(user.id, course.id) : 0;
+        main.innerHTML = `
+          <div class="main-header">
+            <div>
+              <span class="eyebrow">${course.category} · ${course.level}</span>
+              <h1 style="font-size:1.6rem;">${course.title}</h1>
+              <p class="muted" style="max-width:560px;">${course.description}</p>
+            </div>
+            <div style="text-align:right;">
+              ${enrollment
+                ? `<div class="muted mono" style="margin-bottom:8px;">${pct}% complete</div>`
+                : `<button class="btn btn-primary" id="enrollBtn">Enroll in course</button>`}
+              ${enrollment && enrollment.certificateIssued
+                ? `<a href="certificate.html?course=${course.id}" class="btn btn-primary btn-sm">View certificate</a>`
+                : ''}
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <div>
+              ${course.videoUrl ? `
+              <div class="video-wrap">
+                <video controls preload="metadata">
+                  <source src="${course.videoUrl}" type="video/mp4">
+                  Your browser does not support embedded video.
+                </video>
+              </div>` : `
+              <div class="video-placeholder">
+                <strong>🎥 No video added yet</strong>
+                <span>Once you have a training video for this course, an administrator can add its link from "Manage courses" and it will appear here automatically.</span>
+              </div>`}
+
+              <div class="card mt-24">
+                <h3 style="font-size:1rem;">Course modules</h3>
+                <ul class="module-list" id="moduleList"></ul>
+              </div>
+            </div>
+
+            <div>
+              <div class="card-dark">
+                <span class="eyebrow">Assessment</span>
+                <h3 style="color:var(--paper);font-size:1.05rem;">Ready to test your knowledge?</h3>
+                <p style="font-size:.86rem;">Complete all modules, then take the quiz to earn your certificate for ${course.title}.</p>
+                <button class="btn btn-primary btn-block" id="quizBtn" ${!enrollment ? 'disabled' : ''}>
+                  ${enrollment && enrollment.quizPassed ? 'Retake quiz' : 'Take quiz'}
+                </button>
+                ${!enrollment ? `<p class="field-hint" style="color:rgba(246,243,235,.6);margin-top:8px;">Enroll first to unlock the quiz.</p>` : ''}
+                ${enrollment && enrollment.quizScore !== null ? `<p class="field-hint" style="color:rgba(246,243,235,.6);margin-top:8px;">Last score: ${enrollment.quizScore}%</p>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+
+        const list = document.getElementById('moduleList');
+        list.innerHTML = course.modules.map((m, i) => {
+          const done = enrollment && enrollment.completedModules.includes(i);
+          return `<li class="${done ? 'done' : ''}">
+            <span class="module-num">${done ? '✓' : i + 1}</span>
+            <span style="flex:1;">${m}</span>
+            ${enrollment ? `<button class="btn btn-ghost btn-sm" data-mod="${i}" ${done ? 'disabled' : ''}>${done ? 'Completed' : 'Mark done'}</button>` : ''}
+          </li>`;
+        }).join('');
+
+        list.querySelectorAll('button[data-mod]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            Store.markModuleDone(user.id, course.id, Number(btn.dataset.mod));
+            enrollment = Store.getEnrollment(user.id, course.id);
+            showToast('Module marked complete');
+            renderPage();
+          });
+        });
+
+        const enrollBtn = document.getElementById('enrollBtn');
+        if (enrollBtn) enrollBtn.addEventListener('click', () => {
+          enrollment = Store.enroll(user.id, course.id);
+          showToast('Enrolled — you can now start the modules');
+          renderPage();
+        });
+
+        const quizBtn = document.getElementById('quizBtn');
+        if (quizBtn) quizBtn.addEventListener('click', () => {
+          if (!enrollment) return;
+          window.location.href = `quiz.html?course=${course.id}`;
+        });
+      }
+
+      renderPage();
+    }
+  }
+</script>
+</body>
+</html>

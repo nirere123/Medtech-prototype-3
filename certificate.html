@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = renderShell('certificates');
+  if (user) {
+    const main = document.getElementById('mainContent');
+    const params = new URLSearchParams(window.location.search);
+    const course = Store.getCourse(params.get('course'));
+    const enrollment = course ? Store.getEnrollment(user.id, course.id) : null;
+
+    if (!course || !enrollment || !enrollment.certificateIssued) {
+      main.innerHTML = `<div class="empty-state card"><p>No certificate found for this course yet. Pass the course quiz first.</p><a href="courses.html" class="btn btn-ghost" style="margin-top:10px;">Browse courses</a></div>`;
+    } else {
+      main.innerHTML = `
+        <div class="main-header">
+          <div>
+            <span class="eyebrow">Certificate</span>
+            <h1 style="font-size:1.5rem;">${course.title}</h1>
+            <p class="muted">Issued ${new Date(enrollment.certificateDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          </div>
+          <button class="btn btn-primary" id="downloadBtn">Download certificate</button>
+        </div>
+        <div class="cert-wrap">
+          <canvas id="certCanvas" width="1200" height="850"></canvas>
+        </div>
+      `;
+
+      const canvas = document.getElementById('certCanvas');
+      const ctx = canvas.getContext('2d');
+      const dateStr = new Date(enrollment.certificateDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      const certId = 'MTC-' + course.id.toUpperCase().slice(0, 4) + '-' + enrollment.userId.replace('u_', '');
+
+      // Background
+      ctx.fillStyle = '#F6F3EB';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Outer border
+      ctx.strokeStyle = '#0E332F';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
+      ctx.strokeStyle = '#E8A33D';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(44, 44, canvas.width - 88, canvas.height - 88);
+
+      // Header band
+      ctx.fillStyle = '#0E332F';
+      ctx.fillRect(44, 44, canvas.width - 88, 96);
+
+      ctx.fillStyle = '#E8A33D';
+      ctx.font = '600 22px "Space Grotesk", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MEDTECH TRAINING & CERTIFICATE SYSTEM', canvas.width / 2, 100);
+
+      // Title
+      ctx.fillStyle = '#132320';
+      ctx.font = '600 20px "IBM Plex Mono", monospace';
+      ctx.fillText('CERTIFICATE OF COMPLETION', canvas.width / 2, 205);
+
+      ctx.font = '400 16px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = '#4A5C57';
+      ctx.fillText('This certifies that', canvas.width / 2, 260);
+
+      ctx.font = '700 44px "Space Grotesk", sans-serif';
+      ctx.fillStyle = '#0E332F';
+      ctx.fillText(user.name, canvas.width / 2, 320);
+
+      ctx.font = '400 16px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = '#4A5C57';
+      ctx.fillText('has successfully completed the course', canvas.width / 2, 365);
+
+      ctx.font = '600 30px "Space Grotesk", sans-serif';
+      ctx.fillStyle = '#0E332F';
+      ctx.fillText(course.title, canvas.width / 2, 415);
+
+      ctx.font = '400 15px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = '#4A5C57';
+      ctx.fillText(`with a quiz score of ${enrollment.quizScore}%`, canvas.width / 2, 450);
+
+      // Pulse line signature
+      ctx.strokeStyle = '#E8A33D';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      const py = 510, startX = canvas.width / 2 - 180;
+      ctx.moveTo(startX, py);
+      ctx.lineTo(startX + 130, py);
+      ctx.lineTo(startX + 148, py - 26);
+      ctx.lineTo(startX + 166, py + 30);
+      ctx.lineTo(startX + 184, py);
+      ctx.lineTo(startX + 360, py);
+      ctx.stroke();
+
+      // Footer meta
+      ctx.textAlign = 'left';
+      ctx.font = '500 13px "IBM Plex Mono", monospace';
+      ctx.fillStyle = '#4A5C57';
+      ctx.fillText(`Issued: ${dateStr}`, 100, canvas.height - 90);
+      ctx.fillText(`Certificate ID: ${certId}`, 100, canvas.height - 68);
+
+      ctx.textAlign = 'right';
+      ctx.fillText('MedTech Certify · Prototype', canvas.width - 100, canvas.height - 90);
+      ctx.fillText('African Leadership University', canvas.width - 100, canvas.height - 68);
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = `${user.name.replace(/\s+/g, '_')}_${course.id}_certificate.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  }
+</script>
+</body>
+</html>

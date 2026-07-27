@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = renderShell('dashboard');
+  if (user) {
+    const main = document.getElementById('mainContent');
+    const enrollments = Store.getUserEnrollments(user.id);
+    const courses = Store.getCourses();
+
+    const enrolledCourses = enrollments.map(e => ({
+      enrollment: e,
+      course: Store.getCourse(e.courseId)
+    })).filter(x => x.course);
+
+    const certCount = enrollments.filter(e => e.certificateIssued).length;
+    const inProgressCount = enrollments.filter(e => !e.certificateIssued).length;
+    const avgProgress = enrolledCourses.length
+      ? Math.round(enrolledCourses.reduce((sum, x) => sum + Store.courseProgressPercent(user.id, x.course.id), 0) / enrolledCourses.length)
+      : 0;
+
+    main.innerHTML = `
+      <div class="main-header">
+        <div>
+          <span class="eyebrow">Dashboard</span>
+          <h1 style="font-size:1.7rem;">Welcome back, ${user.name.split(' ')[0]}</h1>
+          <p class="muted">Here's where your training stands today.</p>
+        </div>
+        <a href="courses.html" class="btn btn-primary">Browse courses</a>
+      </div>
+
+      <div class="vitals-row">
+        <div class="vital">
+          <div class="vital-value">${enrolledCourses.length}</div>
+          <div class="vital-label">Courses enrolled</div>
+        </div>
+        <div class="vital">
+          <div class="vital-value">${inProgressCount}</div>
+          <div class="vital-label">In progress</div>
+        </div>
+        <div class="vital">
+          <div class="vital-value">${certCount}</div>
+          <div class="vital-label">Certificates earned</div>
+        </div>
+        <div class="vital">
+          <div class="vital-value">${avgProgress}%</div>
+          <div class="vital-label">Average progress</div>
+        </div>
+      </div>
+
+      <div class="flex-between" style="margin-bottom:14px;">
+        <h2 style="font-size:1.1rem;">Continue learning</h2>
+      </div>
+      <div class="course-grid" id="enrolledGrid"></div>
+    `;
+
+    const grid = document.getElementById('enrolledGrid');
+    if (!enrolledCourses.length) {
+      grid.innerHTML = `<div class="empty-state card" style="grid-column:1/-1;">
+        <p><strong>You haven't enrolled in any courses yet.</strong></p>
+        <p class="muted">Browse the catalog to start your first diagnostic equipment training.</p>
+        <a href="courses.html" class="btn btn-primary" style="margin-top:10px;">View courses</a>
+      </div>`;
+    } else {
+      grid.innerHTML = enrolledCourses.map(({ enrollment, course }) => {
+        const pct = Store.courseProgressPercent(user.id, course.id);
+        const badge = enrollment.certificateIssued
+          ? `<span class="badge badge-certified">Certified</span>`
+          : `<span class="badge badge-enrolled">In progress</span>`;
+        return `
+        <a href="course.html?id=${course.id}" class="course-card">
+          <div class="course-thumb"><span class="eyebrow">${course.category}</span></div>
+          <div class="course-body">
+            <div class="flex-between">
+              <h3>${course.title}</h3>
+            </div>
+            ${badge}
+            <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <div class="course-meta"><span>${pct}% complete</span></div>
+          </div>
+        </a>`;
+      }).join('');
+    }
+  }
+</script>
+</body>
+</html>

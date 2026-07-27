@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = renderShell('courses');
+  if (user) {
+    const main = document.getElementById('mainContent');
+    const params = new URLSearchParams(window.location.search);
+    const course = Store.getCourse(params.get('course'));
+    const enrollment = course ? Store.getEnrollment(user.id, course.id) : null;
+
+    if (!course || !enrollment) {
+      main.innerHTML = `<div class="empty-state card"><p>You need to enroll in this course before taking its quiz.</p><a href="courses.html" class="btn btn-ghost" style="margin-top:10px;">Back to courses</a></div>`;
+    } else {
+      const PASS_THRESHOLD = 70;
+      main.innerHTML = `
+        <div class="main-header">
+          <div>
+            <span class="eyebrow">Assessment</span>
+            <h1 style="font-size:1.5rem;">${course.title} — Quiz</h1>
+            <p class="muted">Answer all questions, then submit. You need ${PASS_THRESHOLD}% or higher to earn your certificate.</p>
+          </div>
+        </div>
+        <form id="quizForm">${course.quiz.map((q, qi) => `
+          <div class="quiz-q">
+            <h4>${qi + 1}. ${q.q}</h4>
+            <div class="quiz-opts">
+              ${q.opts.map((opt, oi) => `
+                <label class="quiz-opt" data-q="${qi}" data-o="${oi}">
+                  <input type="radio" name="q${qi}" value="${oi}" required>
+                  ${opt}
+                </label>`).join('')}
+            </div>
+          </div>`).join('')}
+          <button type="submit" class="btn btn-primary" id="submitQuiz">Submit answers</button>
+        </form>
+        <div id="resultBox" style="display:none;" class="card mt-24"></div>
+      `;
+
+      document.getElementById('quizForm').addEventListener('submit', e => {
+        e.preventDefault();
+        let correctCount = 0;
+        course.quiz.forEach((q, qi) => {
+          const selected = document.querySelector(`input[name="q${qi}"]:checked`);
+          const chosen = selected ? Number(selected.value) : -1;
+          document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`).forEach(optEl => {
+            const oi = Number(optEl.dataset.o);
+            if (oi === q.correct) optEl.classList.add('correct');
+            else if (oi === chosen) optEl.classList.add('incorrect');
+          });
+          if (chosen === q.correct) correctCount++;
+        });
+
+        const scorePct = Math.round((correctCount / course.quiz.length) * 100);
+        const passed = scorePct >= PASS_THRESHOLD;
+        Store.recordQuizResult(user.id, course.id, scorePct, passed);
+
+        document.getElementById('submitQuiz').disabled = true;
+        const box = document.getElementById('resultBox');
+        box.style.display = 'block';
+        box.innerHTML = passed
+          ? `<h3 style="color:var(--pulse-dim);">You passed — ${scorePct}%</h3>
+             <p class="muted">Great work. Your certificate for ${course.title} has been issued.</p>
+             <a href="certificate.html?course=${course.id}" class="btn btn-primary">View my certificate</a>`
+          : `<h3 style="color:var(--danger);">Not quite — ${scorePct}%</h3>
+             <p class="muted">You need ${PASS_THRESHOLD}% to pass. Review the module material and try again.</p>
+             <a href="course.html?id=${course.id}" class="btn btn-ghost">Back to course</a>
+             <button class="btn btn-primary" onclick="window.location.reload()">Retake quiz</button>`;
+        box.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  }
+</script>
+</body>
+</html>

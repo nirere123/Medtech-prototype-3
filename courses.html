@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = renderShell('courses');
+  if (user) {
+    const main = document.getElementById('mainContent');
+    const courses = Store.getCourses();
+    const categories = ['All', ...new Set(courses.map(c => c.category))];
+
+    main.innerHTML = `
+      <div class="main-header">
+        <div>
+          <span class="eyebrow">Catalog</span>
+          <h1 style="font-size:1.7rem;">Diagnostic equipment courses</h1>
+          <p class="muted">Learn to operate medical machinery correctly, then take the quiz to earn your certificate.</p>
+        </div>
+      </div>
+      <div class="filters" id="filters">
+        ${categories.map((c, i) => `<button class="chip ${i === 0 ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('')}
+      </div>
+      <div class="course-grid" id="grid"></div>
+    `;
+
+    function render(filterCat) {
+      const list = filterCat === 'All' ? courses : courses.filter(c => c.category === filterCat);
+      const grid = document.getElementById('grid');
+      if (!list.length) {
+        grid.innerHTML = `<div class="empty-state card" style="grid-column:1/-1;"><p>No courses in this category yet.</p></div>`;
+        return;
+      }
+      grid.innerHTML = list.map(course => {
+        const enrolled = Store.getEnrollment(user.id, course.id);
+        const pct = enrolled ? Store.courseProgressPercent(user.id, course.id) : 0;
+        let badge = `<span class="badge badge-new">New</span>`;
+        if (enrolled && enrolled.certificateIssued) badge = `<span class="badge badge-certified">Certified</span>`;
+        else if (enrolled) badge = `<span class="badge badge-enrolled">Enrolled</span>`;
+        return `
+        <a href="course.html?id=${course.id}" class="course-card">
+          <div class="course-thumb"><span class="eyebrow">${course.category} · ${course.level}</span></div>
+          <div class="course-body">
+            <h3>${course.title}</h3>
+            <p class="muted" style="font-size:.84rem;margin:0;">${course.description.slice(0, 90)}${course.description.length > 90 ? '…' : ''}</p>
+            ${badge}
+            ${enrolled ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
+            <div class="course-meta"><span>${course.modules.length} modules</span><span>${course.durationMins} min</span></div>
+          </div>
+        </a>`;
+      }).join('');
+    }
+
+    render('All');
+    document.getElementById('filters').addEventListener('click', e => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      render(btn.dataset.cat);
+    });
+  }
+</script>
+</body>
+</html>

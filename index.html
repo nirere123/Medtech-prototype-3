@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTech Certify — Training &amp; Certificate System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none"><path d="M14 2 3 7v6c0 6.5 4.5 10.7 11 13 6.5-2.3 11-6.5 11-13V7L14 2Z" fill="#E8A33D"/><path d="M8 14h4l1.5-4 2 8 1.5-4h3" stroke="#0A2624" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      MedTech Certify
+    </div>
+    <nav class="topbar-links">
+      <a href="#about">About</a>
+      <a href="#courses">Courses</a>
+      <a href="#auth" class="btn btn-primary btn-sm">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<section class="auth-wrap" id="auth">
+  <div class="auth-visual">
+    <span class="eyebrow">Rwanda &amp; Africa · Medical diagnostic training</span>
+    <h1>Correct equipment use starts before the scan.</h1>
+    <p>MedTech Certify trains doctors and healthcare workers to operate diagnostic machinery correctly — ultrasound, X-ray, and lab analyzers — through short courses, hands-on quizzes, and verifiable certificates.</p>
+    <div class="pulse-divider" style="margin-top:28px;max-width:420px;">
+      <svg viewBox="0 0 600 34" preserveAspectRatio="none">
+        <path class="pulse-path" d="M0,17 L140,17 L160,4 L180,30 L200,17 L230,17 L245,10 L260,24 L275,17 L600,17"/>
+      </svg>
+    </div>
+    <div class="vitals-row" style="margin-top:26px;max-width:440px;">
+      <div class="vital" style="background:rgba(246,243,235,0.06);">
+        <div class="vital-value">03</div>
+        <div class="vital-label">Diagnostic equipment tracks</div>
+      </div>
+      <div class="vital" style="background:rgba(246,243,235,0.06);">
+        <div class="vital-value">24/7</div>
+        <div class="vital-label">Platform availability</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-form-side">
+    <div class="auth-box">
+      <div class="tab-row">
+        <button class="tab-btn active" data-tab="login">Log in</button>
+        <button class="tab-btn" data-tab="signup">Create account</button>
+      </div>
+
+      <!-- LOGIN -->
+      <form id="loginForm" class="auth-panel active">
+        <h2 style="font-size:1.3rem;">Welcome back</h2>
+        <p class="muted" style="margin-bottom:20px;">Log in to continue your training.</p>
+        <div class="field">
+          <label for="loginEmail">Email address</label>
+          <input type="email" id="loginEmail" required placeholder="you@hospital.rw">
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <p id="loginError" class="muted" style="color:var(--danger);display:none;"></p>
+        <button type="submit" class="btn btn-primary btn-block">Log in</button>
+        <p class="field-hint" style="margin-top:14px;">New here? <a href="#" data-switch="signup" style="color:var(--amber-dim);font-weight:600;">Create an account</a></p>
+      </form>
+
+      <!-- SIGNUP -->
+      <form id="signupForm" class="auth-panel">
+        <h2 style="font-size:1.3rem;">Create your account</h2>
+        <p class="muted" style="margin-bottom:20px;">Register as a learner or an administrator.</p>
+        <div class="field">
+          <label for="signupName">Full name</label>
+          <input type="text" id="signupName" required placeholder="e.g. Dr. Aliya Nirere">
+        </div>
+        <div class="field">
+          <label for="signupEmail">Email address</label>
+          <input type="email" id="signupEmail" required placeholder="you@hospital.rw">
+        </div>
+        <div class="field">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" required minlength="4" placeholder="At least 4 characters">
+        </div>
+        <div class="field">
+          <label>I am registering as</label>
+          <div class="role-select">
+            <label class="role-option checked">
+              <input type="radio" name="role" value="learner" checked> Doctor / Healthcare worker
+            </label>
+            <label class="role-option">
+              <input type="radio" name="role" value="admin"> Administrator
+            </label>
+          </div>
+        </div>
+        <p id="signupError" class="muted" style="color:var(--danger);display:none;"></p>
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+        <p class="field-hint" style="margin-top:14px;">Already registered? <a href="#" data-switch="login" style="color:var(--amber-dim);font-weight:600;">Log in</a></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script src="store.js"></script>
+<script>
+  // Redirect straight to dashboard if already logged in
+  if (Store.currentUser()) window.location.href = 'dashboard.html';
+
+  // Tab switching
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+    document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
+  }
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  document.querySelectorAll('[data-switch]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); switchTab(a.dataset.switch);
+  }));
+
+  // Role option highlight
+  document.querySelectorAll('.role-option input').forEach(r => r.addEventListener('change', () => {
+    document.querySelectorAll('.role-option').forEach(o => o.classList.remove('checked'));
+    r.closest('.role-option').classList.add('checked');
+  }));
+
+  // Login submit (FR2)
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const result = Store.login(email, password);
+    const errEl = document.getElementById('loginError');
+    if (!result.ok) {
+      errEl.textContent = result.error;
+      errEl.style.display = 'block';
+      return;
+    }
+    window.location.href = 'dashboard.html';
+  });
+
+  // Signup submit (FR1)
+  document.getElementById('signupForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const role = document.querySelector('input[name="role"]:checked').value;
+    const result = Store.registerUser({ name, email, password, role });
+    const errEl = document.getElementById('signupError');
+    if (!result.ok) {
+      errEl.textContent = result.error;
+      errEl.style.display = 'block';
+      return;
+    }
+    Store.login(email, password);
+    window.location.href = 'dashboard.html';
+  });
+</script>
+</body>
+</html>

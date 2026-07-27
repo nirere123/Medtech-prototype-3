@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Certificates — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = renderShell('certificates');
+  if (user) {
+    const main = document.getElementById('mainContent');
+    const enrollments = Store.getUserEnrollments(user.id).filter(e => e.certificateIssued);
+
+    main.innerHTML = `
+      <div class="main-header">
+        <div>
+          <span class="eyebrow">Certificates</span>
+          <h1 style="font-size:1.7rem;">My certificates</h1>
+          <p class="muted">Certificates you've earned by passing a course quiz.</p>
+        </div>
+      </div>
+      <div class="course-grid" id="grid"></div>
+    `;
+
+    const grid = document.getElementById('grid');
+    if (!enrollments.length) {
+      grid.innerHTML = `<div class="empty-state card" style="grid-column:1/-1;">
+        <p><strong>No certificates yet.</strong></p>
+        <p class="muted">Complete a course and pass its quiz to earn your first certificate.</p>
+        <a href="courses.html" class="btn btn-primary" style="margin-top:10px;">Browse courses</a>
+      </div>`;
+    } else {
+      grid.innerHTML = enrollments.map(e => {
+        const course = Store.getCourse(e.courseId);
+        if (!course) return '';
+        return `
+        <a href="certificate.html?course=${course.id}" class="course-card">
+          <div class="course-thumb"><span class="eyebrow">${course.category}</span></div>
+          <div class="course-body">
+            <h3>${course.title}</h3>
+            <span class="badge badge-certified">Score ${e.quizScore}%</span>
+            <div class="course-meta"><span>Issued ${new Date(e.certificateDate).toLocaleDateString()}</span></div>
+          </div>
+        </a>`;
+      }).join('');
+    }
+  }
+</script>
+</body>
+</html>

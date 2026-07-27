@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Courses — MedTech Certify</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell"></div>
+
+<script src="store.js"></script>
+<script src="shell.js"></script>
+<script>
+  const user = Store.requireAdmin();
+  if (user) {
+    renderShell('admin');
+    const main = document.getElementById('mainContent');
+
+    main.innerHTML = `
+      <div class="main-header">
+        <div>
+          <span class="eyebrow">Administration</span>
+          <h1 style="font-size:1.7rem;">Manage courses</h1>
+          <p class="muted">Upload new training courses or edit existing ones. Changes appear in the catalog immediately.</p>
+        </div>
+        <button class="btn btn-primary" id="newCourseBtn">+ New course</button>
+      </div>
+
+      <div class="card" style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Course</th><th>Category</th><th>Level</th><th>Modules</th><th>Quiz Qs</th><th></th></tr></thead>
+          <tbody id="courseTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card mt-24" id="formCard" style="display:none;"></div>
+    `;
+
+    function refreshTable() {
+      const courses = Store.getCourses();
+      const body = document.getElementById('courseTableBody');
+      body.innerHTML = courses.map(c => `
+        <tr>
+          <td><strong>${c.title}</strong></td>
+          <td>${c.category}</td>
+          <td>${c.level}</td>
+          <td>${c.modules.length}</td>
+          <td>${c.quiz.length}</td>
+          <td style="text-align:right;white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" data-edit="${c.id}">Edit</button>
+            <button class="btn btn-danger btn-sm" data-del="${c.id}">Delete</button>
+          </td>
+        </tr>`).join('');
+
+      body.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openForm(Store.getCourse(b.dataset.edit))));
+      body.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+        if (confirm('Delete this course? This cannot be undone.')) {
+          Store.deleteCourse(b.dataset.del);
+          showToast('Course deleted');
+          refreshTable();
+        }
+      }));
+    }
+
+    function openForm(course) {
+      const isNew = !course;
+      const c = course || { id: '', title: '', category: '', level: 'Beginner', description: '', videoUrl: '', durationMins: 30, modules: [''], quiz: [{ q: '', opts: ['', '', '', ''], correct: 0 }] };
+
+      const formCard = document.getElementById('formCard');
+      formCard.style.display = 'block';
+      formCard.innerHTML = `
+        <h3 style="font-size:1.05rem;">${isNew ? 'New course' : 'Edit course'}</h3>
+        <div class="field"><label>Course title</label><input id="f_title" value="${c.title}" required></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <div class="field"><label>Category</label><input id="f_category" value="${c.category}" required></div>
+          <div class="field"><label>Level</label>
+            <select id="f_level">
+              <option ${c.level === 'Beginner' ? 'selected' : ''}>Beginner</option>
+              <option ${c.level === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+              <option ${c.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
+            </select>
+          </div>
+          <div class="field"><label>Duration (mins)</label><input id="f_duration" type="number" value="${c.durationMins}" required></div>
+        </div>
+        <div class="field"><label>Description</label><textarea id="f_desc" rows="3" required>${c.description}</textarea></div>
+        <div class="field">
+          <label>Video link (optional)</label>
+          <input id="f_video" value="${c.videoUrl}" placeholder="https://... — leave blank if you don't have one yet">
+          <p class="field-hint">If left blank, learners will see a "video coming soon" placeholder on the course page instead.</p>
+        </div>
+
+        <div class="field">
+          <label>Modules (one per line)</label>
+          <textarea id="f_modules" rows="4">${c.modules.join('\n')}</textarea>
+        </div>
+
+        <div class="field">
+          <label>Quiz — one question per block</label>
+          <div class="field-hint" style="margin-bottom:8px;">Format each line as: Question | Option A | Option B | Option C | Option D | correct option number (1-4)</div>
+          <textarea id="f_quiz" rows="5">${c.quiz.map(q => `${q.q} | ${q.opts.join(' | ')} | ${q.correct + 1}`).join('\n')}</textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="saveCourseBtn">${isNew ? 'Create course' : 'Save changes'}</button>
+          <button class="btn btn-ghost" id="cancelFormBtn">Cancel</button>
+        </div>
+      `;
+
+      document.getElementById('cancelFormBtn').addEventListener('click', () => { formCard.style.display = 'none'; });
+
+      document.getElementById('saveCourseBtn').addEventListener('click', () => {
+        const title = document.getElementById('f_title').value.trim();
+        const category = document.getElementById('f_category').value.trim();
+        const level = document.getElementById('f_level').value;
+        const durationMins = Number(document.getElementById('f_duration').value) || 30;
+        const description = document.getElementById('f_desc').value.trim();
+        const videoUrl = document.getElementById('f_video').value.trim();
+        const modules = document.getElementById('f_modules').value.split('\n').map(s => s.trim()).filter(Boolean);
+        const quiz = document.getElementById('f_quiz').value.split('\n').map(s => s.trim()).filter(Boolean).map(line => {
+          const parts = line.split('|').map(p => p.trim());
+          const correctNum = Number(parts[5]) || 1;
+          return { q: parts[0] || '', opts: [parts[1] || '', parts[2] || '', parts[3] || '', parts[4] || ''], correct: correctNum - 1 };
+        });
+
+        if (!title || !category || !modules.length || !quiz.length) {
+          showToast('Please fill in all required fields');
+          return;
+        }
+
+        const id = isNew ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString().slice(-4) : c.id;
+        Store.upsertCourse({ id, title, category, level, durationMins, description, videoUrl, modules, quiz });
+        showToast(isNew ? 'Course created' : 'Course updated');
+        formCard.style.display = 'none';
+        refreshTable();
+      });
+
+      formCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('newCourseBtn').addEventListener('click', () => openForm(null));
+    refreshTable();
+  }
+</script>
+</body>
+</html>
