@@ -1,4 +1,4 @@
-# MedTech Training & Certificate System — Prototype
+# MedTech Training & Certificate System
 
 A web-based training and certification platform that helps healthcare workers in Rwanda and Africa learn to correctly operate medical diagnostic equipment (ultrasound, X-ray, laboratory analyzers), complete quizzes, and earn certificates.
 
@@ -7,11 +7,11 @@ A web-based training and certification platform that helps healthcare workers in
 | | |
 |---|---|
 | **Live demo (public URL)** | https://nirere123.github.io/Medtech-prototype-3/ |
-| **Demo video** | *Add your video link here once recorded* |
+| **Demo video** | https://youtu.be/nmjNX2AzD6g |
 | **GitHub repository** | https://github.com/nirere123/Medtech-prototype-3 |
-| **SRS document** | https://docs.google.com/document/d/10QpUreONt_dSWneBOd2tJgxTh8hb7i73IXRW5mTrNu0/edit?usp=sharing |
+| **SRS document** | SayinzogaAliya Nirere_Assignment1_(W4)_05232026 — https://docs.google.com/document/d/10QpUreONt_dSWneBOd2tJgxTh8hb7i73IXRW5mTrNu0/edit?usp=sharing |
 
-This is the **sophisticated / detailed prototype**: a full multi-page site (separate pages for the dashboard, course catalog, course detail, quiz, and certificates) with a designed sidebar app shell, progress tracking, and an admin course-management screen. It's still just HTML, CSS, and JavaScript — no build step, no backend, no npm install. `localStorage` acts as the database.
+This is a full multi-page prototype (separate pages for the dashboard, course catalog, course detail, quiz, and certificates) with a designed sidebar app shell, progress tracking, and an admin course-management screen. It's built with plain HTML, CSS, and JavaScript — no build step, no backend, no npm install. `localStorage` acts as the database.
 
 It implements the functional requirements from the SRS:
 
@@ -58,6 +58,8 @@ Just double-click `index.html` — the whole site works by opening files directl
 
 ## Using the app
 
+**Important for anyone testing this for the first time:** accounts are stored locally in your own browser, not on a shared server — so if you're opening this site for the first time, you must click **"Create account"** first. You cannot log in with someone else's email/password, because that account only exists in the browser it was created on. Sign up with any name, any email (it doesn't need to be real), and any password of at least 4 characters, and you'll be logged in immediately.
+
 1. On the landing page, click **Create account**, choose **Doctor / Healthcare worker** or **Administrator**, and sign up.
 2. Log in. You'll land on the **Dashboard**, showing your stats (courses enrolled, in progress, certificates earned).
 3. Go to **Courses**, pick one, and **Enroll**.
@@ -76,13 +78,6 @@ If you ever need to redeploy (e.g. after pushing new changes), here's how GitHub
 2. **Source**: `Deploy from a branch` → **Branch**: `main` → folder `/ (root)` → **Save**
 3. Wait 1–2 minutes, then refresh the Pages settings screen for the live URL
 4. Every time you push new commits to `main`, GitHub Pages automatically redeploys the update within a minute or two — no extra steps needed
-
-## Before you submit — quick checklist
-
-- [x] GitHub repo is public — confirmed at https://github.com/nirere123/Medtech-prototype-3
-- [x] The GitHub Pages URL loads and works — confirmed at https://nirere123.github.io/Medtech-prototype-3/
-- [ ] Add your demo video link to the table above once it's recorded and uploaded
-- [ ] Your Google Doc (named `personNames_Summative_MMDDYYYY`) has the video link, GitHub link, and SRS link, and sharing is set so anyone with the link can view it
 
 ## Notes on this prototype
 
